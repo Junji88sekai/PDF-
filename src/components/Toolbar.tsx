@@ -19,6 +19,7 @@ import {
   Hash,
   FolderDown,
   FileDown,
+  BookmarkCheck,
 } from 'lucide-react';
 import { ViewMode, DocumentInfo } from '../types';
 import { SAMPLE_DOCS } from '../utils/samplePdfGenerator';
@@ -47,6 +48,9 @@ interface ToolbarProps {
   onOpenExportModal: () => void;
   onQuickSaveCurrentPage: () => void;
   selectedPagesCount: number;
+  onSavePdfWithToc?: () => void;
+  isSavingWithToc?: boolean;
+  tocItemsCount?: number;
 }
 
 export const Toolbar: React.FC<ToolbarProps> = ({
@@ -73,6 +77,9 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   onOpenExportModal,
   onQuickSaveCurrentPage,
   selectedPagesCount,
+  onSavePdfWithToc,
+  isSavingWithToc = false,
+  tocItemsCount = 0,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -326,6 +333,20 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           <Hash className="w-3.5 h-3.5 text-indigo-400" />
           <span className="hidden sm:inline">ページ番号付与</span>
         </button>
+
+        {/* Save PDF with Embedded TOC (Bookmarks) Button */}
+        {onSavePdfWithToc && (
+          <button
+            id="toolbar-save-pdf-with-toc-btn"
+            onClick={onSavePdfWithToc}
+            disabled={isSavingWithToc || tocItemsCount === 0}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-indigo-950/60 hover:bg-indigo-900/80 text-indigo-200 hover:text-white transition-colors border border-indigo-500/40 disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
+            title="現在の目次をしおり（アウトライン）として埋め込んだPDFを保存"
+          >
+            <BookmarkCheck className={`w-3.5 h-3.5 text-indigo-400 ${isSavingWithToc ? 'animate-pulse' : ''}`} />
+            <span className="hidden xl:inline">{isSavingWithToc ? '目次保存中...' : '目次付きPDF保存'}</span>
+          </button>
+        )}
 
         {/* AI TOC generate quick action */}
         <button

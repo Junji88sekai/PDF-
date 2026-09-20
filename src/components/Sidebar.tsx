@@ -25,6 +25,8 @@ import {
   Hash,
   FolderDown,
   FileDown,
+  BookmarkCheck,
+  BookmarkPlus,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -59,6 +61,8 @@ interface SidebarProps {
   selectedPages?: number[];
   onTogglePageSelection?: (page: number) => void;
   onQuickSavePage?: (page: number) => void;
+  onSavePdfWithToc?: () => void;
+  isSavingWithToc?: boolean;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -91,6 +95,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   selectedPages = [],
   onTogglePageSelection,
   onQuickSavePage,
+  onSavePdfWithToc,
+  isSavingWithToc = false,
 }) => {
   const [tocFilter, setTocFilter] = useState('');
   const [copiedExport, setCopiedExport] = useState(false);
@@ -269,8 +275,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 {showExportMenu && (
                   <div
                     id="toc-export-dropdown"
-                    className="absolute right-0 top-full mt-1 w-44 rounded-lg bg-neutral-900 border border-neutral-700 shadow-xl py-1 z-30 text-xs"
+                    className="absolute right-0 top-full mt-1 w-48 rounded-lg bg-neutral-900 border border-neutral-700 shadow-xl py-1 z-30 text-xs"
                   >
+                    {onSavePdfWithToc && (
+                      <button
+                        onClick={() => {
+                          onSavePdfWithToc();
+                          setShowExportMenu(false);
+                        }}
+                        disabled={isSavingWithToc || tocItems.length === 0}
+                        className="w-full px-3 py-2 text-left flex items-center gap-2 hover:bg-neutral-800 text-indigo-300 hover:text-indigo-200 font-medium disabled:opacity-50"
+                      >
+                        <BookmarkCheck className="w-3.5 h-3.5 text-indigo-400" />
+                        <span>目次付きPDFを保存</span>
+                      </button>
+                    )}
                     <button
                       onClick={handleCopyMarkdown}
                       className="w-full px-3 py-1.5 text-left flex items-center gap-2 hover:bg-neutral-800 text-neutral-200"
@@ -397,6 +416,26 @@ export const Sidebar: React.FC<SidebarProps> = ({
               })
             )}
           </div>
+
+          {/* TOC Save PDF Footer */}
+          {onSavePdfWithToc && (
+            <div className="p-3 border-t border-neutral-800 bg-neutral-900/90 backdrop-blur-sm shrink-0">
+              <button
+                id="sidebar-save-pdf-with-toc-btn"
+                onClick={onSavePdfWithToc}
+                disabled={isSavingWithToc || tocItems.length === 0}
+                className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white shadow-md shadow-indigo-950/50 hover:shadow-indigo-500/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                title="現在の目次をPDF本体の「しおり（アウトライン）」として埋め込んで保存"
+              >
+                <BookmarkCheck className={`w-4 h-4 text-indigo-200 ${isSavingWithToc ? 'animate-pulse' : ''}`} />
+                <span>{isSavingWithToc ? '目次を埋め込み中...' : '目次付きPDFを保存'}</span>
+              </button>
+              <div className="mt-1.5 flex items-center justify-center gap-1.5 text-[10px] text-neutral-400">
+                <BookmarkPlus className="w-3 h-3 text-indigo-400 shrink-0" />
+                <span>Adobe Acrobat等のしおりに反映されます</span>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

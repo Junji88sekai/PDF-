@@ -24,6 +24,8 @@ import { PageNumberModal } from './components/PageNumberModal';
 import { PageExportModal } from './components/PageExportModal';
 import { extractPagesToNewPdf, saveFileWithPickerOrDownload } from './utils/pdfPageExporter';
 import { addPageNumbersToPdf } from './utils/pdfPageNumberer';
+import { embedOutlinesInPdf } from './utils/pdfOutlineEmbedder';
+import { BookmarkCheck } from 'lucide-react';
 import { PageNumberConfig } from './types';
 
 export default function App() {
@@ -70,6 +72,10 @@ export default function App() {
   // Page Selection & Extraction state
   const [selectedPages, setSelectedPages] = useState<number[]>([]);
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
+
+  // TOC PDF Export state
+  const [isSavingWithToc, setIsSavingWithToc] = useState<boolean>(false);
+  const [tocSaveToast, setTocSaveToast] = useState<string | null>(null);
 
   // Load a PDF ArrayBuffer into the viewer and extract text/TOC
   const loadPdfData = useCallback(async (data: Uint8Array | ArrayBuffer, docName: string, isSample = false) => {
@@ -322,6 +328,45 @@ export default function App() {
     }
   };
 
+  // Save PDF with embedded TOC (Document Outlines / Bookmarks)
+  const handleSavePdfWithToc = async () => {
+    if (!currentPdfBytes) {
+      alert('PDFデータが読み込まれていません');
+      return;
+    }
+    if (tocItems.length === 0) {
+      alert('保存する目次項目がありません。目次を手動で追加するか、「AI目次生成」等で作成してください。');
+      return;
+    }
+
+    setIsSavingWithToc(true);
+    try {
+      const modifiedBytes = await embedOutlinesInPdf(currentPdfBytes, tocItems);
+      // Keep modified bytes in state so future actions also retain these bookmarks
+      setCurrentPdfBytes(modifiedBytes);
+
+      const baseName = documentInfo.name.replace(/\.pdf$/i, '');
+      const suggestedName = `${baseName}_with_toc.pdf`;
+
+      const saved = await saveFileWithPickerOrDownload(
+        modifiedBytes,
+        suggestedName,
+        'application/pdf',
+        '目次（しおり）付きPDF文書'
+      );
+
+      if (saved) {
+        setTocSaveToast('目次（しおり）をPDF本体に埋め込んで保存しました！');
+        setTimeout(() => setTocSaveToast(null), 4000);
+      }
+    } catch (err: any) {
+      console.error('Error embedding TOC into PDF:', err);
+      alert(`目次の埋め込み保存に失敗しました: ${err.message || err}`);
+    } finally {
+      setIsSavingWithToc(false);
+    }
+  };
+
   // Zoom controls
   const handleZoomIn = () => setScale((prev) => Math.min(2.5, +(prev + 0.15).toFixed(2)));
   const handleZoomOut = () => setScale((prev) => Math.max(0.5, +(prev - 0.15).toFixed(2)));
@@ -412,6 +457,9 @@ export default function App() {
         onOpenExportModal={() => setIsExportModalOpen(true)}
         onQuickSaveCurrentPage={() => handleQuickSavePage(currentPage)}
         selectedPagesCount={selectedPages.length}
+        onSavePdfWithToc={handleSavePdfWithToc}
+        isSavingWithToc={isSavingWithToc}
+        tocItemsCount={tocItems.length}
       />
 
       {/* Main Content Area: Left Sidebar + PDF Viewer */}
@@ -453,6 +501,8 @@ export default function App() {
           selectedPages={selectedPages}
           onTogglePageSelection={handleTogglePageSelection}
           onQuickSavePage={handleQuickSavePage}
+          onSavePdfWithToc={handleSavePdfWithToc}
+          isSavingWithToc={isSavingWithToc}
         />
 
         {/* PDF Viewer Canvas Display */}
@@ -512,6 +562,22 @@ export default function App() {
         onClearPageSelection={handleClearPageSelection}
         onClose={() => setIsExportModalOpen(false)}
       />
+
+      {/* Success Toast Notification */}
+      {tocSaveToast && (
+        <div
+          id="toc-save-success-toast"
+          className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-4 py-3 bg-neutral-900/95 border border-emerald-500/60 text-white rounded-xl shadow-2xl backdrop-blur-md transition-all duration-300 animate-in fade-in slide-in-from-bottom-3"
+        >
+          <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+            <BookmarkCheck className="w-5 h-5" />
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-emerald-300">保存完了</p>
+            <p className="text-xs text-neutral-300">{tocSaveToast}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
