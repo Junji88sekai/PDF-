@@ -246,7 +246,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 id="generate-ai-toc-btn"
                 onClick={onGenerateAiToc}
                 disabled={isAiGenerating}
-                className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-lg text-xs font-medium bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 disabled:opacity-50 text-white transition-colors shadow-xs"
+                className="h-8 flex-1 flex items-center justify-center gap-1.5 px-3 rounded-lg text-xs font-medium bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 disabled:opacity-50 text-white transition-all shadow-xs border border-indigo-500/50"
                 title="Gemini AIでページ構造と見出しを精密解析して目次を再生成"
               >
                 <Sparkles className={`w-3.5 h-3.5 ${isAiGenerating ? 'animate-spin' : ''}`} />
@@ -256,7 +256,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <button
                 id="add-toc-item-btn"
                 onClick={onAddItem}
-                className="p-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-white transition-colors"
+                className="w-8 h-8 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-white border border-neutral-700/60 flex items-center justify-center transition-colors shrink-0"
                 title="目次項目を手動追加"
               >
                 <Plus className="w-4 h-4" />
@@ -266,7 +266,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <button
                   id="toc-export-menu-btn"
                   onClick={() => setShowExportMenu(!showExportMenu)}
-                  className="p-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-white transition-colors"
+                  className="w-8 h-8 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-white border border-neutral-700/60 flex items-center justify-center transition-colors shrink-0"
                   title="目次の書き出し"
                 >
                   <Download className="w-4 h-4" />

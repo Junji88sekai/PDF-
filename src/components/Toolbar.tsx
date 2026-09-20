@@ -22,7 +22,6 @@ import {
   BookmarkCheck,
 } from 'lucide-react';
 import { ViewMode, DocumentInfo } from '../types';
-import { SAMPLE_DOCS } from '../utils/samplePdfGenerator';
 
 interface ToolbarProps {
   sidebarOpen: boolean;
@@ -40,7 +39,7 @@ interface ToolbarProps {
   onRotate: () => void;
   onFocusSearch: () => void;
   documentInfo: DocumentInfo;
-  onLoadSample: (docId: string) => void;
+  onLoadSample?: (docId: string) => void;
   onUploadFile: (file: File) => void;
   isAiGenerating: boolean;
   onGenerateAiToc: () => void;
@@ -102,14 +101,14 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   return (
     <header
       id="app-top-toolbar"
-      className="h-14 px-3 bg-neutral-900 border-b border-neutral-800 flex items-center justify-between gap-2 select-none z-30 shrink-0"
+      className="h-14 px-3 bg-neutral-900 border-b border-neutral-800 flex items-center justify-between gap-2 select-none z-30 shrink-0 overflow-x-auto"
     >
       {/* Left: Sidebar Toggle + Document Title / Sample selector */}
-      <div className="flex items-center gap-2 min-w-0">
+      <div className="flex items-center gap-2 min-w-0 shrink-0">
         <button
           id="toggle-sidebar-btn"
           onClick={onToggleSidebar}
-          className="p-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-white transition-colors"
+          className="w-8 h-8 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-white flex items-center justify-center transition-colors border border-neutral-700/60 shrink-0"
           title={sidebarOpen ? 'サイドバーを閉じる' : '目次・検索サイドバーを開く'}
         >
           {sidebarOpen ? (
@@ -119,50 +118,30 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           )}
         </button>
 
-        <div className="h-5 w-px bg-neutral-800 hidden sm:block" />
-
-        {/* Current Document Name & Sample Dropdown */}
-        <div className="flex items-center gap-2 min-w-0">
-          <FileText className="w-4 h-4 text-indigo-400 shrink-0 hidden sm:block" />
-          <div className="flex flex-col min-w-0">
-            <span
-              className="text-xs font-semibold text-neutral-100 truncate max-w-[140px] sm:max-w-[200px] md:max-w-[260px]"
-              title={documentInfo.name}
-            >
-              {documentInfo.name}
-            </span>
-          </div>
-
-          {/* Sample PDF Selector */}
-          <select
-            id="sample-pdf-select"
-            onChange={(e) => {
-              if (e.target.value) {
-                onLoadSample(e.target.value);
-              }
-            }}
-            defaultValue=""
-            className="text-xs bg-neutral-950 border border-neutral-800 text-neutral-300 rounded-md px-2 py-1 focus:outline-none focus:border-indigo-500 hidden md:block"
-          >
-            <option value="" disabled>
-              サンプルPDFを選択...
-            </option>
-            {SAMPLE_DOCS.map((doc) => (
-              <option key={doc.id} value={doc.id}>
-                {doc.name} ({doc.pageCount}p)
-              </option>
-            ))}
-          </select>
-        </div>
+        {/* User uploaded document name (hidden for default/sample to keep toolbar clean) */}
+        {!documentInfo.isSample && documentInfo.name && (
+          <>
+            <div className="h-5 w-px bg-neutral-800 hidden sm:block" />
+            <div className="flex items-center gap-1.5 min-w-0">
+              <FileText className="w-4 h-4 text-indigo-400 shrink-0 hidden sm:block" />
+              <span
+                className="text-xs font-semibold text-neutral-100 truncate max-w-[140px] sm:max-w-[200px] md:max-w-[260px]"
+                title={documentInfo.name}
+              >
+                {documentInfo.name}
+              </span>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Center: Page Navigation Controls */}
-      <div className="flex items-center gap-1 bg-neutral-950 border border-neutral-800/90 rounded-lg p-0.5">
+      <div className="h-8 flex items-center gap-1 bg-neutral-950 border border-neutral-800/90 rounded-lg px-1 py-0.5 shrink-0">
         <button
           id="nav-first-page-btn"
           onClick={() => onPageChange(1)}
           disabled={currentPage <= 1}
-          className="p-1.5 rounded text-neutral-400 hover:text-white hover:bg-neutral-850 disabled:opacity-30 disabled:hover:bg-transparent transition-colors hidden sm:block"
+          className="p-1 rounded text-neutral-400 hover:text-white hover:bg-neutral-850 disabled:opacity-30 disabled:hover:bg-transparent transition-colors hidden sm:block"
           title="最初のページへ"
         >
           <ChevronsLeft className="w-3.5 h-3.5" />
@@ -172,7 +151,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           id="nav-prev-page-btn"
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage <= 1}
-          className="p-1.5 rounded text-neutral-400 hover:text-white hover:bg-neutral-850 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+          className="p-1 rounded text-neutral-400 hover:text-white hover:bg-neutral-850 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
           title="前のページへ"
         >
           <ChevronLeft className="w-4 h-4" />
@@ -203,7 +182,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           id="nav-next-page-btn"
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage >= totalPages}
-          className="p-1.5 rounded text-neutral-400 hover:text-white hover:bg-neutral-850 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+          className="p-1 rounded text-neutral-400 hover:text-white hover:bg-neutral-850 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
           title="次のページへ"
         >
           <ChevronRight className="w-4 h-4" />
@@ -213,21 +192,21 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           id="nav-last-page-btn"
           onClick={() => onPageChange(totalPages)}
           disabled={currentPage >= totalPages}
-          className="p-1.5 rounded text-neutral-400 hover:text-white hover:bg-neutral-850 disabled:opacity-30 disabled:hover:bg-transparent transition-colors hidden sm:block"
+          className="p-1 rounded text-neutral-400 hover:text-white hover:bg-neutral-850 disabled:opacity-30 disabled:hover:bg-transparent transition-colors hidden sm:block"
           title="最後のページへ"
         >
           <ChevronsRight className="w-3.5 h-3.5" />
         </button>
       </div>
 
-      {/* Right: Zoom, View mode, Search shortcut, Upload PDF */}
-      <div className="flex items-center gap-1.5">
+      {/* Right: Zoom, View mode, Search shortcut, Feature Actions, Upload PDF */}
+      <div className="flex items-center gap-1.5 shrink-0">
         {/* Zoom Controls */}
-        <div className="flex items-center gap-0.5 bg-neutral-950 border border-neutral-800/90 rounded-lg p-0.5 hidden lg:flex">
+        <div className="h-8 flex items-center gap-0.5 bg-neutral-950 border border-neutral-800/90 rounded-lg px-1 py-0.5 hidden lg:flex shrink-0">
           <button
             id="zoom-out-btn"
             onClick={onZoomOut}
-            className="p-1.5 rounded text-neutral-400 hover:text-white hover:bg-neutral-850 transition-colors"
+            className="p-1 rounded text-neutral-400 hover:text-white hover:bg-neutral-850 transition-colors"
             title="縮小"
           >
             <ZoomOut className="w-3.5 h-3.5" />
@@ -245,7 +224,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           <button
             id="zoom-in-btn"
             onClick={onZoomIn}
-            className="p-1.5 rounded text-neutral-400 hover:text-white hover:bg-neutral-850 transition-colors"
+            className="p-1 rounded text-neutral-400 hover:text-white hover:bg-neutral-850 transition-colors"
             title="拡大"
           >
             <ZoomIn className="w-3.5 h-3.5" />
@@ -254,7 +233,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           <button
             id="fit-width-btn"
             onClick={onFitWidth}
-            className="p-1.5 rounded text-neutral-400 hover:text-white hover:bg-neutral-850 transition-colors"
+            className="p-1 rounded text-neutral-400 hover:text-white hover:bg-neutral-850 transition-colors"
             title="幅に合わせる"
           >
             <Maximize2 className="w-3.5 h-3.5" />
@@ -265,13 +244,13 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         <button
           id="toggle-view-mode-btn"
           onClick={onToggleViewMode}
-          className="p-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-white transition-colors hidden sm:flex items-center gap-1 text-xs"
+          className="w-8 h-8 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-white border border-neutral-700/60 flex items-center justify-center transition-colors hidden sm:flex shrink-0"
           title={viewMode === 'continuous' ? '単一ページ表示へ切替' : 'スクロール連続表示へ切替'}
         >
           {viewMode === 'continuous' ? (
-            <Layers className="w-4 h-4 text-indigo-400" />
+            <Layers className="w-3.5 h-3.5 text-indigo-400" />
           ) : (
-            <Columns className="w-4 h-4" />
+            <Columns className="w-3.5 h-3.5" />
           )}
         </button>
 
@@ -279,59 +258,59 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         <button
           id="rotate-page-btn"
           onClick={onRotate}
-          className="p-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-white transition-colors hidden xl:block"
+          className="w-8 h-8 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-white border border-neutral-700/60 flex items-center justify-center transition-colors hidden xl:flex shrink-0"
           title="右に90度回転"
         >
-          <RotateCw className="w-4 h-4" />
+          <RotateCw className="w-3.5 h-3.5" />
         </button>
 
         {/* Search focus shortcut */}
         <button
           id="toolbar-search-btn"
           onClick={onFocusSearch}
-          className="p-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-amber-400 hover:text-amber-300 transition-colors"
+          className="w-8 h-8 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-amber-400 hover:text-amber-300 border border-neutral-700/60 flex items-center justify-center transition-colors shrink-0"
           title="キーワード検索"
         >
-          <Search className="w-4 h-4" />
+          <Search className="w-3.5 h-3.5" />
         </button>
 
-        {/* Emerald One-Click Page Save & Page Extraction Buttons */}
-        <div className="flex items-center gap-1 bg-emerald-950/40 border border-emerald-500/40 rounded-lg p-0.5">
-          <button
-            id="quick-save-page-btn"
-            onClick={onQuickSaveCurrentPage}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-sm"
-            title={`現在のページ (${currentPage}p) を指定場所にワンクリック保存`}
-          >
-            <FileDown className="w-3.5 h-3.5" />
-            <span>このページを保存</span>
-          </button>
+        <div className="h-5 w-px bg-neutral-800 hidden md:block" />
 
-          <button
-            id="open-page-export-modal-btn"
-            onClick={onOpenExportModal}
-            className="flex items-center gap-1 px-2 py-1.5 rounded-md text-emerald-300 hover:text-white hover:bg-emerald-900/60 transition-colors text-xs font-medium"
-            title="複数ページの選択・抽出保存ダイアログを開く"
-          >
-            <FolderDown className="w-3.5 h-3.5" />
-            <span className="hidden lg:inline">ページ抽出</span>
-            {selectedPagesCount > 0 && (
-              <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-500 text-neutral-950 font-bold font-mono ml-0.5">
-                {selectedPagesCount}
-              </span>
-            )}
-          </button>
-        </div>
+        {/* Page Save & Page Extraction Action Buttons */}
+        <button
+          id="quick-save-page-btn"
+          onClick={onQuickSaveCurrentPage}
+          className="h-8 px-2.5 sm:px-3 rounded-lg text-xs font-medium bg-neutral-800 hover:bg-neutral-700 text-neutral-200 hover:text-white border border-neutral-700/80 hover:border-neutral-600 transition-all flex items-center justify-center gap-1.5 shadow-xs shrink-0 hidden 2xl:flex"
+          title={`現在のページ (${currentPage}p) を指定場所にワンクリック保存`}
+        >
+          <FileDown className="w-3.5 h-3.5 text-neutral-400" />
+          <span>現ページ保存</span>
+        </button>
+
+        <button
+          id="open-page-export-modal-btn"
+          onClick={onOpenExportModal}
+          className="h-8 px-2.5 sm:px-3 rounded-lg text-xs font-medium bg-neutral-800 hover:bg-neutral-700 text-neutral-200 hover:text-white border border-neutral-700/80 hover:border-neutral-600 transition-all flex items-center justify-center gap-1.5 shadow-xs shrink-0"
+          title="複数ページの選択・抽出保存ダイアログを開く"
+        >
+          <FolderDown className="w-3.5 h-3.5 text-neutral-400" />
+          <span className="hidden lg:inline">ページ抽出</span>
+          {selectedPagesCount > 0 && (
+            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-indigo-500 text-white font-bold font-mono ml-0.5">
+              {selectedPagesCount}
+            </span>
+          )}
+        </button>
 
         {/* Page Numbering Feature Button */}
         <button
           id="toolbar-page-number-btn"
           onClick={onOpenPageNumberModal}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-neutral-800 hover:bg-neutral-700 text-neutral-200 hover:text-white transition-colors border border-neutral-700/80"
+          className="h-8 px-2.5 sm:px-3 rounded-lg text-xs font-medium bg-neutral-800 hover:bg-neutral-700 text-neutral-200 hover:text-white border border-neutral-700/80 hover:border-neutral-600 transition-all flex items-center justify-center gap-1.5 shadow-xs shrink-0"
           title="PDFの各ページにページ番号（ノンブル）を付与"
         >
-          <Hash className="w-3.5 h-3.5 text-indigo-400" />
-          <span className="hidden sm:inline">ページ番号付与</span>
+          <Hash className="w-3.5 h-3.5 text-neutral-400" />
+          <span className="hidden xl:inline">ページ番号付与</span>
         </button>
 
         {/* Save PDF with Embedded TOC (Bookmarks) Button */}
@@ -340,11 +319,11 @@ export const Toolbar: React.FC<ToolbarProps> = ({
             id="toolbar-save-pdf-with-toc-btn"
             onClick={onSavePdfWithToc}
             disabled={isSavingWithToc || tocItemsCount === 0}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-indigo-950/60 hover:bg-indigo-900/80 text-indigo-200 hover:text-white transition-colors border border-indigo-500/40 disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
+            className="h-8 px-2.5 sm:px-3 rounded-lg text-xs font-medium bg-neutral-800 hover:bg-neutral-700 text-neutral-200 hover:text-white border border-neutral-700/80 hover:border-neutral-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-1.5 shadow-xs shrink-0"
             title="現在の目次をしおり（アウトライン）として埋め込んだPDFを保存"
           >
             <BookmarkCheck className={`w-3.5 h-3.5 text-indigo-400 ${isSavingWithToc ? 'animate-pulse' : ''}`} />
-            <span className="hidden xl:inline">{isSavingWithToc ? '目次保存中...' : '目次付きPDF保存'}</span>
+            <span className="hidden md:inline">{isSavingWithToc ? '保存中...' : '目次付き保存'}</span>
           </button>
         )}
 
@@ -353,11 +332,11 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           id="toolbar-ai-toc-btn"
           onClick={onGenerateAiToc}
           disabled={isAiGenerating}
-          className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-indigo-600/90 hover:bg-indigo-500 text-white transition-colors disabled:opacity-50"
+          className="h-8 px-2.5 sm:px-3 rounded-lg text-xs font-medium bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white border border-indigo-500/50 disabled:opacity-50 transition-all flex items-center justify-center gap-1.5 shadow-xs shrink-0"
           title="Gemini AIで見出しと目次を自動解析"
         >
-          <Sparkles className={`w-3.5 h-3.5 ${isAiGenerating ? 'animate-spin' : ''}`} />
-          <span>{isAiGenerating ? '解析中...' : 'AI目次生成'}</span>
+          <Sparkles className={`w-3.5 h-3.5 text-indigo-200 ${isAiGenerating ? 'animate-spin' : ''}`} />
+          <span className="hidden sm:inline">{isAiGenerating ? '解析中...' : 'AI目次生成'}</span>
         </button>
 
         {/* Upload PDF Button */}
@@ -372,10 +351,11 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         <button
           id="upload-pdf-btn"
           onClick={() => fileInputRef.current?.click()}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-neutral-100 hover:bg-white text-neutral-900 transition-colors shadow-xs"
+          className="h-8 px-3 rounded-lg text-xs font-semibold bg-neutral-100 hover:bg-white active:bg-neutral-200 text-neutral-900 transition-all flex items-center justify-center gap-1.5 shadow-xs shrink-0"
+          title="ローカルのPDFファイルを開く"
         >
-          <Upload className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline">PDFを開く</span>
+          <Upload className="w-3.5 h-3.5 text-neutral-800" />
+          <span>PDFを開く</span>
         </button>
       </div>
     </header>
