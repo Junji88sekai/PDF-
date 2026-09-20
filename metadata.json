@@ -1,0 +1,6 @@
+{
+  "name": "PDF Table of Contents Reader & Search",
+  "description": "PDFのテキストやレイアウトから目次を自動生成し、左バーから各ページへ即座にジャンプ・全文検索・ページ番号（ノンブル）付与ができるPDFリーダー",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
